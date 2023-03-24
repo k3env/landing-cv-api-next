@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sample-api
+  namespace: sample
+spec:
+  selector:
+    matchLabels:
+      app: smaple
+      tier: api
+  template:
+    metadata:
+      labels:
+        app: sample
+        tier: api
+    spec:
+      containers:
+        - name: api
+          image: k3env/sample-api:latest
+          resources:
+            limits:
+              memory: '128Mi'
+              cpu: '500m'
+          ports:
+            - containerPort: 3000
