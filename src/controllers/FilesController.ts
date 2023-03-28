@@ -59,6 +59,8 @@ export function FilesController(
     if (file && file.value) {
       rmSync(process.cwd() + '/public/' + file.value._id.toHexString() + '.' + file.value.extension);
       res.status(204).send();
+    } else {
+      res.status(404).send({ error: 'File not found' });
     }
   });
   done();
