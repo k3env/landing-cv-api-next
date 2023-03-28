@@ -1,7 +1,9 @@
+import { ObjectId } from '@fastify/mongodb';
+
 export interface Profile {
   name: string;
-  profilePhoto: string;
-  about_photo: string;
+  profilePhoto: string | ObjectId;
+  about_photo: string | ObjectId;
   about_header: string;
   about_summary: string;
   degree: 'Intern' | 'Junior' | 'Middle' | 'Senior' | 'Lead';
