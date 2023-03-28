@@ -20,6 +20,16 @@ export function FilesController(
     const files = await app.mongo.db?.collection<File>('files').find().toArray();
     res.send({ data: files?.map((d) => ({ ...d, url: `http://localhost:3000/public/${d._id}.${d.extension}` })) });
   });
+  app.get('/:id', async function (req: FastifyRequest, res: FastifyReply) {
+    const file = await app.mongo.db
+      ?.collection<File>('files')
+      .findOne({ _id: new ObjectId((req.params as { id: string }).id) });
+    if (file) {
+      res.send({ data: { ...file, url: `http://localhost:3000/public/${file._id}.${file.extension}` } });
+    } else {
+      res.status(404).send({ error: 'File not found' });
+    }
+  });
   app.post('/', async (req: FastifyRequest, res: FastifyReply) => {
     const reqBody = await req.file();
 
