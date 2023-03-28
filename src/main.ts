@@ -3,9 +3,8 @@ import fastifyCors from '@fastify/cors';
 import * as dotenv from 'dotenv';
 import { fastifyMongodb } from '@fastify/mongodb';
 import fastifyStatic from '@fastify/static';
-import { ProfileController, FilesController } from './controllers';
+import { ProfileController, FilesController, TagsController, ProjectsController } from './controllers';
 import fastifyMultipart from '@fastify/multipart';
-import { TagsController } from './controllers/TagsController';
 
 dotenv.config();
 
@@ -23,6 +22,7 @@ export async function main(): Promise<void> {
   app.register(ProfileController, { prefix: '/api/v1/profile' });
   app.register(FilesController, { prefix: '/api/v1/files' });
   app.register(TagsController, { prefix: '/api/v1/tags' });
+  app.register(ProjectsController, { prefix: '/api/v1/projects' });
   app.listen(
     { port: Number.parseInt(process.env.APP_PORT ?? '3000'), host: process.env.APP_HOST ?? '127.0.0.1' },
     (e) => {
