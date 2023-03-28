@@ -14,8 +14,53 @@ export function ProfileController(
   done: (err?: Error) => void,
 ): void {
   app.get('/', async function (req: FastifyRequest, res: FastifyReply) {
-    const profile = await app.mongo.db?.collection<Profile>('profile').findOne();
-    res.send({ data: profile });
+    const { query } = req;
+    if ((query as { aggregated: boolean }).aggregated) {
+      const profile = await app.mongo.db
+        ?.collection<Profile>('profile')
+        .aggregate([
+          {
+            $lookup: {
+              from: 'files',
+              localField: 'about_photo',
+              foreignField: '_id',
+              as: 'about_photo',
+            },
+          },
+          {
+            $lookup: {
+              from: 'files',
+              localField: 'profilePhoto',
+              foreignField: '_id',
+              as: 'profilePhoto',
+            },
+          },
+          {
+            $unwind: {
+              path: '$about_photo',
+              preserveNullAndEmptyArrays: false,
+            },
+          },
+          {
+            $unwind: {
+              path: '$profilePhoto',
+              preserveNullAndEmptyArrays: false,
+            },
+          },
+        ])
+        .toArray();
+      if (profile && profile[0]) {
+        const p = profile[0];
+        p.about_photo.url = `${process.env.PUBLIC_BASE_URL}/${p.about_photo._id}.${p.about_photo.extension}`;
+        p.profilePhoto.url = `${process.env.PUBLIC_BASE_URL}/${p.profilePhoto._id}.${p.profilePhoto.extension}`;
+        res.send({ data: p });
+      } else {
+        res.status(404).send({ error: 'No profile found' });
+      }
+    } else {
+      const p = await app.mongo.db?.collection<Profile>('profile').findOne();
+      res.send({ data: p });
+    }
   });
   app.post('/', async (req: FastifyRequest, res: FastifyReply) => {
     const collection = app.mongo.db?.collection<Profile>('profile');
