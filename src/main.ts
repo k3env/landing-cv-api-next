@@ -10,10 +10,11 @@ dotenv.config();
 
 export async function main(): Promise<void> {
   const app = fastify({ logger: true });
+  const asset_path = new URL(process.env.PUBLIC_BASE_URL ?? 'http://localhost:3000/public').pathname;
   app.register(fastifyMongodb, { url: process.env.MONGO_URI, forceClose: true });
   app.register(fastifyCors, { origin: '*' });
   app.register(fastifyMultipart);
-  app.register(fastifyStatic, { root: process.cwd() + '/public', serve: true, prefix: '/public' });
+  app.register(fastifyStatic, { root: process.cwd() + '/public', serve: true, prefix: asset_path });
 
   app.all('/', (req, res) => {
     res.send({ hello: 'world' });

@@ -18,14 +18,14 @@ export function FilesController(
 ): void {
   app.get('/', async function (req: FastifyRequest, res: FastifyReply) {
     const files = await app.mongo.db?.collection<File>('files').find().toArray();
-    res.send({ data: files?.map((d) => ({ ...d, url: `http://localhost:3000/public/${d._id}.${d.extension}` })) });
+    res.send({ data: files?.map((d) => ({ ...d, url: `${process.env.PUBLIC_BASE_URL}/${d._id}.${d.extension}` })) });
   });
   app.get('/:id', async function (req: FastifyRequest, res: FastifyReply) {
     const file = await app.mongo.db
       ?.collection<File>('files')
       .findOne({ _id: new ObjectId((req.params as { id: string }).id) });
     if (file) {
-      res.send({ data: { ...file, url: `http://localhost:3000/public/${file._id}.${file.extension}` } });
+      res.send({ data: { ...file, url: `${process.env.PUBLIC_BASE_URL}/${file._id}.${file.extension}` } });
     } else {
       res.status(404).send({ error: 'File not found' });
     }
