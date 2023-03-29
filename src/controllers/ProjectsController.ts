@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyBaseLogger, FastifyTypeProviderDefault } from 'fastify';
 import { Server, IncomingMessage, ServerResponse } from 'http';
-import { ObjectId, OptionalId } from 'mongodb';
+import { ObjectId, OptionalId, WithId } from 'mongodb';
+import { File } from '../models/File.model';
 import { Project } from '../models/Project.model';
 
 export function ProjectsController(
@@ -53,6 +54,13 @@ export function ProjectsController(
             },
           ])
           .toArray();
+        data.forEach((doc) => {
+          doc.cover.url = `${process.env.PUBLIC_BASE_URL}/${doc.cover._id}.${doc.cover.extension}`;
+          doc.images = doc.images.map((i: WithId<File>) => ({
+            ...i,
+            url: `${process.env.PUBLIC_BASE_URL}/${i._id}.${i.extension}`,
+          }));
+        });
         res.send({ data: data });
       } else {
         const data = await collection.find().toArray();
@@ -73,6 +81,14 @@ export function ProjectsController(
         const result = await collection.insertOne(value);
         res.send({ data: result });
       }
+    });
+    app.get('/:id', async (req, res) => {
+      const data = await collection.findOne({ _id: new ObjectId((req.params as { id: string }).id) });
+      res.send({ data });
+    });
+    app.delete('/:id', async (req, res) => {
+      const data = await collection.findOneAndDelete({ _id: new ObjectId((req.params as { id: string }).id) });
+      res.send({ data });
     });
   } else {
     throw new Error('Cant init collection in mongo');
