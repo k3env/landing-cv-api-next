@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyBaseLogger, FastifyTypeProviderDefault } from 'fastify';
 import { Server, IncomingMessage, ServerResponse } from 'http';
 import { ObjectId, OptionalId, WithId } from 'mongodb';
+import { jwtVerify, KeyLike } from 'jose';
 import { File } from '../models/File.model';
 import { Project } from '../models/Project.model';
 
@@ -12,10 +13,11 @@ export function ProjectsController(
     FastifyBaseLogger,
     FastifyTypeProviderDefault
   >,
-  _: Record<never, never>,
+  opts: { pubKey: KeyLike; assetPath: URL },
   done: (err?: Error) => void,
 ): void {
   const collection = app.mongo.db?.collection<Project>('projects');
+  const { pubKey, assetPath } = opts;
   if (collection) {
     app.get('/', async (req, res) => {
       const query = req.query as Record<string, string | undefined>;
@@ -55,10 +57,10 @@ export function ProjectsController(
           ])
           .toArray();
         data.forEach((doc) => {
-          doc.cover.url = `${process.env.PUBLIC_BASE_URL}/${doc.cover._id}.${doc.cover.extension}`;
+          doc.cover.url = `${assetPath.href}/${doc.cover._id}.${doc.cover.extension}`;
           doc.images = doc.images.map((i: WithId<File>) => ({
             ...i,
-            url: `${process.env.PUBLIC_BASE_URL}/${i._id}.${i.extension}`,
+            url: `${assetPath.href}/${i._id}.${i.extension}`,
           }));
         });
         res.send({ data: data });
@@ -68,18 +70,28 @@ export function ProjectsController(
       }
     });
     app.post('/', async (req, res) => {
-      const value = req.body as OptionalId<Project>;
-      value.cover = new ObjectId(value.cover);
-      value.images = value.images.map((v) => new ObjectId(v));
-      value.tags = value.tags.map((v) => new ObjectId(v));
-      if (value._id !== undefined) {
-        const id = new ObjectId(value._id);
-        delete value._id;
-        const result = await collection.findOneAndReplace({ _id: id }, value);
-        res.send({ data: result });
-      } else {
-        const result = await collection.insertOne(value);
-        res.send({ data: result });
+      const { token } = req.cookies;
+      if (!token) {
+        res.status(401).send({ message: 'Unauthorized' });
+        return;
+      }
+      try {
+        await jwtVerify(token, pubKey);
+        const value = req.body as OptionalId<Project>;
+        value.cover = new ObjectId(value.cover);
+        value.images = value.images.map((v) => new ObjectId(v));
+        value.tags = value.tags.map((v) => new ObjectId(v));
+        if (value._id !== undefined) {
+          const id = new ObjectId(value._id);
+          delete value._id;
+          const result = await collection.findOneAndReplace({ _id: id }, value);
+          res.send({ data: result });
+        } else {
+          const result = await collection.insertOne(value);
+          res.send({ data: result });
+        }
+      } catch (e) {
+        res.status(401).send({ ...e });
       }
     });
     app.get('/:id', async (req, res) => {
@@ -87,8 +99,18 @@ export function ProjectsController(
       res.send({ data });
     });
     app.delete('/:id', async (req, res) => {
-      const data = await collection.findOneAndDelete({ _id: new ObjectId((req.params as { id: string }).id) });
-      res.send({ data });
+      const { token } = req.cookies;
+      if (!token) {
+        res.status(401).send({ message: 'Unauthorized' });
+        return;
+      }
+      try {
+        await jwtVerify(token, pubKey);
+        const data = await collection.findOneAndDelete({ _id: new ObjectId((req.params as { id: string }).id) });
+        res.send({ data });
+      } catch (e) {
+        res.status(401).send({ ...e });
+      }
     });
   } else {
     throw new Error('Cant init collection in mongo');

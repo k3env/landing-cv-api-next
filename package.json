@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@fastify/cookie": "^8.3.0",
     "@fastify/cors": "^8.2.0",
     "@fastify/mongodb": "^6.2.0",
     "@fastify/multipart": "^7.5.0",
@@ -22,6 +23,7 @@
     "fastify": "^4.14.1",
     "fastify-file-upload": "^4.0.0",
     "form-auto-content": "^3.0.0",
+    "jose": "^4.13.1",
     "mongo": "^0.1.0",
     "tap": "^16.3.4"
   },

@@ -5,30 +5,48 @@ import { fastifyMongodb } from '@fastify/mongodb';
 import fastifyStatic from '@fastify/static';
 import { ProfileController, FilesController, TagsController, ProjectsController } from './controllers';
 import fastifyMultipart from '@fastify/multipart';
+import fastifyCookie from '@fastify/cookie';
+import { importJWK, KeyLike } from 'jose';
 
 dotenv.config();
 
 export async function main(): Promise<void> {
   const app = fastify({ logger: true });
-  const asset_path = new URL(process.env.PUBLIC_BASE_URL ?? 'http://localhost:3000/public').pathname;
-  app.register(fastifyMongodb, { url: process.env.MONGO_URI, forceClose: true });
+
+  const { PUBLIC_BASE_URL, JWK_URL, MONGO_URI, APP_PORT, APP_HOST } = process.env;
+
+  const assetURL = new URL(PUBLIC_BASE_URL ?? 'http://localhost:3000/public');
+  const appPort = Number.parseInt(APP_PORT ?? '3000');
+  const appHost = APP_HOST ?? '127.0.0.1';
+
+  if (!MONGO_URI) {
+    console.log("MONGO_URI isn't set");
+    return;
+  }
+
+  if (!JWK_URL) {
+    console.log("JWK_URL isn't set");
+    return;
+  }
+
+  const publicKey: KeyLike = (await importJWK(await (await fetch(JWK_URL)).json(), 'RS256')) as KeyLike;
+
+  app.register(fastifyMongodb, { url: MONGO_URI, forceClose: true });
   app.register(fastifyCors, { origin: '*' });
   app.register(fastifyMultipart);
-  app.register(fastifyStatic, { root: process.cwd() + '/public', serve: true, prefix: asset_path });
+  app.register(fastifyCookie);
+  app.register(fastifyStatic, { root: process.cwd() + '/public', serve: true, prefix: assetURL.pathname });
 
   app.all('/', (req, res) => {
     res.send({ hello: 'world' });
   });
-  app.register(ProfileController, { prefix: '/api/v1/profile' });
-  app.register(FilesController, { prefix: '/api/v1/files' });
-  app.register(TagsController, { prefix: '/api/v1/tags' });
-  app.register(ProjectsController, { prefix: '/api/v1/projects' });
-  app.listen(
-    { port: Number.parseInt(process.env.APP_PORT ?? '3000'), host: process.env.APP_HOST ?? '127.0.0.1' },
-    (e) => {
-      if (e) throw e;
-    },
-  );
+  app.register(ProfileController, { pubKey: publicKey, assetPath: assetURL, prefix: '/api/v1/profile' });
+  app.register(FilesController, { pubKey: publicKey, assetPath: assetURL, prefix: '/api/v1/files' });
+  app.register(TagsController, { pubKey: publicKey, assetPath: assetURL, prefix: '/api/v1/tags' });
+  app.register(ProjectsController, { pubKey: publicKey, assetPath: assetURL, prefix: '/api/v1/projects' });
+  app.listen({ port: appPort, host: appHost }, (e) => {
+    if (e) throw e;
+  });
 }
 
 main();
