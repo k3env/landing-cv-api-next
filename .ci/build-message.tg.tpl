@@ -1,4 +1,4 @@
-Build #{{build.number}} `k3env/sample-api` finished
+Build #{{build.number}} `k3env/landing-cv-api-next` finished
 
 Message: `{{commit.message}}`
 

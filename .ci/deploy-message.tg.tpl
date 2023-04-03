@@ -1,4 +1,4 @@
-Deployment #{{build.number}} `k3env/sample-api` finished
+Deployment #{{build.number}} `k3env/landing-cv-api-next` finished
 
 {{#success build.status}}
 🟢 succeeded
