@@ -47,6 +47,21 @@ export async function main(): Promise<void> {
   app.listen({ port: appPort, host: appHost }, (e) => {
     if (e) throw e;
   });
+  const stop = (): void => {
+    console.log();
+    app.close();
+    process.exit(0);
+  };
+
+  process.on('SIGINT', () => {
+    stop();
+  }); // CTRL+C
+  process.on('SIGQUIT', () => {
+    stop();
+  }); // Keyboard quit
+  process.on('SIGTERM', () => {
+    stop();
+  }); // `kill` command
 }
 
 main();
