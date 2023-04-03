@@ -32,7 +32,7 @@ export async function main(): Promise<void> {
   const publicKey: KeyLike = (await importJWK(await (await fetch(JWK_URL)).json(), 'RS256')) as KeyLike;
 
   app.register(fastifyMongodb, { url: MONGO_URI, forceClose: true });
-  app.register(fastifyCors, { origin: '*' });
+  app.register(fastifyCors, { origin: true, credentials: true });
   app.register(fastifyMultipart);
   app.register(fastifyCookie);
   app.register(fastifyStatic, { root: process.cwd() + '/public', serve: true, prefix: assetURL.pathname });
