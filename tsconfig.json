@@ -13,7 +13,7 @@
     "useUnknownInCatchVariables": false,
     "inlineSourceMap": true,
     "resolveJsonModule": true,
-    "paths": { "controllers": ["./src/controllers"] }
+    "paths": { "@controllers": ["./src/controllers"] }
   },
   "ts-node": {
     "esm": true

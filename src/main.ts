@@ -3,7 +3,7 @@ import fastifyCors from '@fastify/cors';
 import * as dotenv from 'dotenv';
 import { fastifyMongodb } from '@fastify/mongodb';
 import fastifyStatic from '@fastify/static';
-import { ProfileController, FilesController, TagsController, ProjectsController } from './controllers';
+import { ProfileController, FilesController, TagsController, ProjectsController } from '@controllers';
 import fastifyMultipart from '@fastify/multipart';
 import fastifyCookie from '@fastify/cookie';
 import { importJWK, KeyLike } from 'jose';
