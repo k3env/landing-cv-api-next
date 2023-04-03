@@ -85,7 +85,9 @@ export function ProfileController(
           res.send(value);
         }
       } catch (e) {
-        res.status(401).send({ ...e });
+        const err = e as Error;
+        console.log(err);
+        res.status(500).send({ err });
       }
     });
     done();
