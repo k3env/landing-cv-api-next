@@ -3,7 +3,13 @@ import fastifyCors from '@fastify/cors';
 import * as dotenv from 'dotenv';
 import { fastifyMongodb } from '@fastify/mongodb';
 import fastifyStatic from '@fastify/static';
-import { ProfileController, FilesController, TagsController, ProjectsController } from './controllers';
+import {
+  ProfileController,
+  FilesController,
+  TagsController,
+  ProjectsController,
+  HealthController,
+} from './controllers';
 import fastifyMultipart from '@fastify/multipart';
 import fastifyCookie from '@fastify/cookie';
 import { importJWK, KeyLike } from 'jose';
@@ -37,13 +43,12 @@ export async function main(): Promise<void> {
   app.register(fastifyCookie);
   app.register(fastifyStatic, { root: process.cwd() + '/public', serve: true, prefix: assetURL.pathname });
 
-  app.all('/', (req, res) => {
-    res.send({ hello: 'world' });
-  });
+  app.register(HealthController, { prefix: '/api' });
   app.register(ProfileController, { pubKey: publicKey, assetPath: assetURL, prefix: '/api/v1/profile' });
   app.register(FilesController, { pubKey: publicKey, assetPath: assetURL, prefix: '/api/v1/files' });
   app.register(TagsController, { pubKey: publicKey, assetPath: assetURL, prefix: '/api/v1/tags' });
   app.register(ProjectsController, { pubKey: publicKey, assetPath: assetURL, prefix: '/api/v1/projects' });
+
   app.listen({ port: appPort, host: appHost }, (e) => {
     if (e) throw e;
   });
