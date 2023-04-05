@@ -1,23 +1,33 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: api-next
-  namespace: personal
+  name: api
+  namespace: '{{.ns}}'
 spec:
   selector:
     matchLabels:
-      app: api-next
+      app: api
   template:
     metadata:
       labels:
-        app: api-next
+        app: api
     spec:
+      volumes:
+        - name: static
+          persistentVolumeClaim:
+            claimName: static-volume
       containers:
         - name: api
-          image: k3env/landing-cv-api-next:latest
+          image: k3env/landing-cv-api-next:{{.tag}}
           resources:
             limits:
               memory: '128Mi'
               cpu: '500m'
+          envFrom:
+            - configMapRef:
+                name: api-env
+          volumeMounts:
+            - mountPath: /app/public
+              name: static
           ports:
             - containerPort: 3000
