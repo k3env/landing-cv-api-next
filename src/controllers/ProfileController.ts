@@ -74,13 +74,14 @@ export function ProfileController(
       try {
         await jwtVerify(token, pubKey);
         const profile = await collection.findOne();
-        const update = req.body as Profile;
+        const update = req.body as Profile & { _id?: ObjectId | string };
         update.about_photo = new ObjectId(update.about_photo);
         update.profilePhoto = new ObjectId(update.profilePhoto);
         if (profile === null) {
           const value = await collection.insertOne(update as Profile);
           res.send(value);
         } else {
+          delete update._id;
           const value = await collection.replaceOne({ _id: profile._id }, { ...profile, ...update });
           res.send(value);
         }
