@@ -13,4 +13,5 @@ export interface Profile {
   email: string;
   address: string;
   isFreelance: boolean;
+  lookForJob: 'active' | 'passive' | 'not-interested';
 }
