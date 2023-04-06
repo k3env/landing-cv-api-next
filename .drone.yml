@@ -18,7 +18,7 @@ steps:
         - ${DRONE_COMMIT_SHA:0:8}
         - latest
   - name: deploy
-    image: k3env/kube-apply:0.6
+    image: k3env/kube-apply:v0.6
     settings:
       template: .ci/deployment.yaml
       vars:
@@ -60,7 +60,7 @@ steps:
         - stable
         - latest
   - name: deploy
-    image: k3env/kube-apply:0.6
+    image: k3env/kube-apply:v0.6
     settings:
       template: .ci/deployment.yaml
       vars:
