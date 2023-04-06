@@ -18,11 +18,12 @@ steps:
         - ${DRONE_COMMIT_SHA:0:8}
         - latest
   - name: deploy
-    image: ghcr.io/bh90210/dron8s:latest
+    image: k3env/kube-apply:0.6
     settings:
-      yaml: .ci/deployment.yaml
-      tag: ${DRONE_COMMIT_SHA:0:8}
-      ns: landing-dev
+      template: .ci/deployment.yaml
+      vars:
+        tag: ${DRONE_COMMIT_SHA:0:8}
+        ns: landing-dev
   - name: send notification
     image: appleboy/drone-telegram
     settings:
@@ -59,11 +60,12 @@ steps:
         - stable
         - latest
   - name: deploy
-    image: ghcr.io/bh90210/dron8s:latest
+    image: k3env/kube-apply:0.6
     settings:
-      yaml: .ci/deployment.yaml
-      tag: ${DRONE_TAG}
-      ns: landing
+      template: .ci/deployment.yaml
+      vars:
+        tag: ${DRONE_TAG}
+        ns: landing
   - name: send notification
     image: appleboy/drone-telegram
     settings:

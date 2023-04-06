@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: api
-  namespace: '{{.ns}}'
+  namespace: '$.ns'
 spec:
   selector:
     matchLabels:
@@ -18,7 +18,7 @@ spec:
             claimName: static-volume
       containers:
         - name: api
-          image: k3env/landing-cv-api-next:{{.tag}}
+          image: k3env/landing-cv-api-next:$.tag
           resources:
             limits:
               memory: '128Mi'
